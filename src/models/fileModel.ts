@@ -1,20 +1,19 @@
-import mongoose, {model, Schema, Document} from "mongoose";
+import mongoose, {model, Schema} from "mongoose";
 
-// import { nodemailerConfig } from "../config/nodemailer.js";
 interface Comment{
     text:String,
     user:String,
-    replies?:Comment[]
+    replies?:Comment[],
+    timestamp: Number;
 }
 
-interface Fileinterface{
+interface Fileinterface{ 
     name:String,
-    imageUrl:String,
-    videoUrl:String,
+    fileUrl:String,
+    isVideo:Boolean,
     size: Number,
     tags:String,
     email:String,
-    // explicit casting to document array so that we can access the id
     comments:mongoose.Types.DocumentArray<Comment>;
 }
 
@@ -23,11 +22,13 @@ const fileSchema = new Schema<Fileinterface>({
         type:String,
         required:true
     },
-    imageUrl: {
+    fileUrl: {
         type: String,
+        required: true
     },
-    videoUrl: {
-        type:String,
+    isVideo: {
+        type:Boolean,
+        required: true
     },
     tags: {
         type:String
@@ -47,6 +48,10 @@ const fileSchema = new Schema<Fileinterface>({
             type:String,
             required:true
         },
+        timestamp:{
+            type:Date,
+            default:Date.now,
+        },
         replies:[
             {
                 text:{
@@ -57,25 +62,14 @@ const fileSchema = new Schema<Fileinterface>({
                     type:String,
                     required:true
                 },
+                timestamp:{
+                    type: Date,
+                    default: Date.now,
+                },
             }
         ]
     }]
 })
-
-// fileSchema.post('save', async (doc) => {
-//     let transporter = nodemailerConfig(doc);
-
-//     let info = (await transporter).sendMail({
-//         from: "Sanket Project",
-//         to: doc.email.toString(),
-//         subject: "New File uploaded to Cloud",
-//         html: `<h2>Hello ${doc.name}</h2>
-//             <p>Your File Uploded Succesfully</p>
-//             <a href = "${doc.imageUrl}"> View here </a>
-//         `
-//     })
-//     console.log(info);
-// })
 
 
 const File = model<Fileinterface>("File", fileSchema);

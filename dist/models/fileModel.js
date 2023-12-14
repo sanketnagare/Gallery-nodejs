@@ -4,11 +4,13 @@ const fileSchema = new Schema({
         type: String,
         required: true
     },
-    imageUrl: {
+    fileUrl: {
         type: String,
+        required: true
     },
-    videoUrl: {
-        type: String,
+    isVideo: {
+        type: Boolean,
+        required: true
     },
     tags: {
         type: String
@@ -28,6 +30,10 @@ const fileSchema = new Schema({
                 type: String,
                 required: true
             },
+            timestamp: {
+                type: Date,
+                default: Date.now,
+            },
             replies: [
                 {
                     text: {
@@ -38,22 +44,13 @@ const fileSchema = new Schema({
                         type: String,
                         required: true
                     },
+                    timestamp: {
+                        type: Date,
+                        default: Date.now,
+                    },
                 }
             ]
         }]
 });
-// fileSchema.post('save', async (doc) => {
-//     let transporter = nodemailerConfig(doc);
-//     let info = (await transporter).sendMail({
-//         from: "Sanket Project",
-//         to: doc.email.toString(),
-//         subject: "New File uploaded to Cloud",
-//         html: `<h2>Hello ${doc.name}</h2>
-//             <p>Your File Uploded Succesfully</p>
-//             <a href = "${doc.imageUrl}"> View here </a>
-//         `
-//     })
-//     console.log(info);
-// })
 const File = model("File", fileSchema);
 export { File };

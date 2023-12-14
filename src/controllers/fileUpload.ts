@@ -1,7 +1,7 @@
 import express, {Request, Response} from 'express'
 import { File } from '../models/fileModel.js'
 import fs from 'fs'
-import { v4 as uuid } from 'uuid';
+import mongoose from 'mongoose';
 
 // for __dirname error not support in es6
 import { fileURLToPath } from 'url';
@@ -9,9 +9,15 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-
 import path from "path";
+const ObjectId = mongoose.Types.ObjectId;
 
+
+const generateUniqueId = () => {
+    return new ObjectId();
+}
+
+// Upload image
 export const localFileUpload = async(req:Request, res:Response) => {
     try {
         console.log("I was here");
@@ -31,7 +37,9 @@ export const localFileUpload = async(req:Request, res:Response) => {
         // Date.now provides current time in miliseconds
         // let path = __dirname + "/files/" + Date.now() + `.${file.name.split('.')[1]}`;
 
-        const uniqueId = uuid();
+        // const uniqueId = uuid();
+
+        const uniqueId = generateUniqueId();
 
         let path1 = path.join(__dirname, '../files', `${uniqueId}.${file.name.split('.')[1]}`);
         path1 = path1.replace(/\\/g, '/'); 
@@ -44,11 +52,14 @@ export const localFileUpload = async(req:Request, res:Response) => {
         })
 
         const dataObj = new File ({
+            _id: uniqueId,
             name,
             tags,
             email,
             size: file.size,
-            imageUrl: `${path1.split('/').pop()}`,
+            fileUrl: `${path1.split('/').pop()}`,
+            isVideo:false,
+            comments:[]
         })
 
         const data = await dataObj.save();
@@ -69,7 +80,7 @@ export const localFileUpload = async(req:Request, res:Response) => {
 export const getAllImages = async(req:Request, res:Response) => {
     
     try {
-        const imagesData = await File.find({videoUrl: {$exists: false}}); //only images no videos
+        const imagesData = await File.find({isVideo: false}); //only images no videos
 
         res.status(200)
         .json({
@@ -89,7 +100,7 @@ export const getAllImages = async(req:Request, res:Response) => {
 }
 
 
-
+// Delete image
 export const deleteImage = async(req: Request, res:Response) => {
 
     const imageId = req.params.id;
@@ -106,7 +117,7 @@ export const deleteImage = async(req: Request, res:Response) => {
         }
 
 
-        let imagePath = path.join(__dirname, '../files', image.imageUrl.toString());
+        let imagePath = path.join(__dirname, '../files', image.fileUrl.toString());
 
         console.log(imagePath)
         
@@ -136,10 +147,12 @@ export const deleteImage = async(req: Request, res:Response) => {
 // ---------------------------------------VIDEO---------------------------------------------
 
 const isFileSupported = (type : String, supportedTypes : String[]):boolean => {
-    return supportedTypes.includes(type);
+    // return supportedTypes.includes(type);
+    return supportedTypes.includes(type.toLowerCase());
 }
 
 
+// Video upload
 export const localVideoUpload = async(req:Request, res:Response) => {
 
     try {
@@ -157,7 +170,7 @@ export const localVideoUpload = async(req:Request, res:Response) => {
 
         const videofileType = videofile.name.split('.')[1].toLowerCase();
 
-        const supportedTypes = ["mp4", "mov"];
+        const supportedTypes = ["mp4", "mkv", "avi"];
 
         // check if video is spported or not
         if(!isFileSupported(videofileType, supportedTypes)) {
@@ -169,16 +182,17 @@ export const localVideoUpload = async(req:Request, res:Response) => {
         }
 
         // Allowed file size in mb
-        const allowed_file_size = 100;
+        const allowed_file_size = 150;
         if ((videofile.size / (1024 * 1024)) > allowed_file_size) {                  
             return res.status(413)
             .json({
                 success:false,
-                message:"Video size should be under 20Mb"
+                message:"Video size should be under 150Mb"
             })
         }
 
-        const uniqueId = uuid();
+        // const uniqueId = uuid();
+        const uniqueId = generateUniqueId();
 
         let path2 = path.join(__dirname, '../files', `${uniqueId}.${videofile.name.split('.')[1]}`);
         path2 = path2.replace(/\\/g, '/'); 
@@ -193,10 +207,14 @@ export const localVideoUpload = async(req:Request, res:Response) => {
 
         // after upload creation of entry in DB
         const dataObj = new File ({
+            _id: uniqueId,
             name,
             tags,
             email,
-            videoUrl: `${path2.split('/').pop()}`,
+            size:videofile.size,
+            fileUrl: `${path2.split('/').pop()}`,
+            isVideo: true,
+            comments:[]
         })
 
         const data = await dataObj.save();
@@ -217,12 +235,11 @@ export const localVideoUpload = async(req:Request, res:Response) => {
 }
 
 
-
 // get all images in DB
 export const getAllVideos = async(req:Request, res:Response) => {
     
     try {
-        const videosData = await File.find({imageUrl: {$exists: false}}); //only videos no images
+        const videosData = await File.find({isVideo: true}); //only videos no images
 
         res.status(200)
         .json({
@@ -242,7 +259,7 @@ export const getAllVideos = async(req:Request, res:Response) => {
 }
 
 
-
+// Delete Video
 export const deleteVideo = async(req: Request, res:Response) => {
 
     const videoId = req.params.id;
@@ -259,7 +276,7 @@ export const deleteVideo = async(req: Request, res:Response) => {
         }
 
 
-        let videoPath = path.join(__dirname, '../files', video.videoUrl.toString());
+        let videoPath = path.join(__dirname, '../files', video.fileUrl.toString());
 
         console.log(videoPath)
         
@@ -288,6 +305,7 @@ export const deleteVideo = async(req: Request, res:Response) => {
 
 // ---------------------------------------COMMENTS----------------------------------------------------------
 
+// Add new main comment
 export const addComment = async(req: Request, res:Response) => {
 
     try {
@@ -306,6 +324,7 @@ export const addComment = async(req: Request, res:Response) => {
         video.comments.push({
             text,
             user,
+            timestamp: Date.now()
         })
 
         const updateVideo = await video.save();
@@ -326,8 +345,7 @@ export const addComment = async(req: Request, res:Response) => {
     }
 }
 
-
-
+// Add reply to main comment
 export const addReply = async(req: Request, res:Response) => {
     try {
         const{videoId, commentId, text, user} = req.body;
@@ -355,6 +373,7 @@ export const addReply = async(req: Request, res:Response) => {
         comment.replies?.push({
             text,
             user,
+            timestamp: Date.now(),
         })
 
         const updatedVideo = await video.save();
@@ -375,8 +394,7 @@ export const addReply = async(req: Request, res:Response) => {
     }
 }
 
-
-
+// fetch all comments
 export const getcomments = async(req: Request, res:Response) => {
     try {
         const videoId = req.params.videoId;

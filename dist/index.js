@@ -12,7 +12,11 @@ const __dirname = dirname(__filename);
 dotenv.config();
 const app = express();
 // middlewares
-app.use(express.json());
+app.use(express.json({ limit: '150mb' }));
+app.use((req, res, next) => {
+    res.setHeader('Accept-Ranges', 'none');
+    next();
+});
 // Serve static files
 app.use('/files', express.static(path.join(__dirname, 'files')));
 app.use(cors());

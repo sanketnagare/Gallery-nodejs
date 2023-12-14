@@ -16,7 +16,12 @@ dotenv.config();
 const app = express();
 
 // middlewares
-app.use(express.json())
+app.use(express.json({ limit: '150mb' }))
+
+app.use((req, res, next) => {
+    res.setHeader('Accept-Ranges', 'none');
+    next();
+});
 
 // Serve static files
 app.use('/files', express.static(path.join(__dirname, 'files')));
@@ -34,7 +39,6 @@ const port = process.env.PORT
 
 // connecting to db
 dbconnect();
-
 
 // Routes
 app.use('/api/v1/upload', fileRoutes)
