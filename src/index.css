@@ -40,6 +40,7 @@ h1 {
   width: fit-content;
   position: absolute;
   right: 6rem;
+  background-color: #0f0f22;
   padding: 1rem;
   border-radius: 12px;
   top:5rem;
@@ -59,6 +60,16 @@ h1 {
   border-radius: 12px;
 }
 
+.timestamp{
+  color: #b4b4b4;
+  font-size: 14px;
+  text-align: right;
+}
+
+.replytimestamp{
+  color: #b4b4b4;
+  font-size: 12px;
+}
 .container .media-container{
   display: flex;
   gap: 2rem;

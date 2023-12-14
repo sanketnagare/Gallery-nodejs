@@ -1,12 +1,17 @@
 import axios from 'axios';
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {toast } from 'react-toastify';
+import Spinner from './Spinner';
+
 
 const UploadVideo = () => {
+
     const [video, setVideo] = useState(null);
     const [name, setName] = useState('');
     const [tags, setTags] = useState('');
     const [email, setEmail] = useState('');
+
+    const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
         setVideo(e.target.files[0]);
@@ -14,6 +19,7 @@ const UploadVideo = () => {
 
     const handleUpload = async() => {
         try {
+            setLoading(true);
             if(!video) {
                 alert("Please select a file")
                 return
@@ -46,6 +52,8 @@ const UploadVideo = () => {
 
             console.log(response);
 
+            setLoading(false);
+
         } catch (error) {
             console.log(error)
             toast.error(error)
@@ -54,6 +62,10 @@ const UploadVideo = () => {
 
   return (
     <div className='uploadformbody'>
+
+{loading ? (
+                <Spinner />
+            ) : (
     <div className='uploadform'>
       <div className='inputdiv'>
         <label htmlFor="video">Choose a video:</label>
@@ -73,8 +85,9 @@ const UploadVideo = () => {
       </div>
       <button className='uploadbtn' onClick={handleUpload}>Upload Video</button>
     </div>
-    </div>
+            )}</div>
   )
-}
+  }
+  
 
 export default UploadVideo

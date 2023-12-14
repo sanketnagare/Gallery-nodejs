@@ -3,6 +3,13 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faReply } from '@fortawesome/free-solid-svg-icons';
 
+
+const formatTimestamp = (timestamp) => {
+  const options = { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+  return new Date(timestamp).toLocaleString('en-US', options);
+};
+
+
 const VideoDetails = ({selectedVideo}) => {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
@@ -77,11 +84,12 @@ const VideoDetails = ({selectedVideo}) => {
             <div key={comment._id} className="comment">
                 <div className='userinfo'>
                     <FontAwesomeIcon icon={faUser} size='l' style={{color: "#ffffff",}} />
-                    <p>{user1}</p>
+                    <p className='username'>{user1}: </p>
+                    <p>{comment.text}</p>
+                    <FontAwesomeIcon icon={faReply} style={{color: "#ffffff",}} onClick={() => setReplyTo(comment._id)}/>
                 </div>
                 <div className='commenttext'>
-                    <p className=''>{comment.text}</p>
-                    <FontAwesomeIcon icon={faReply} style={{color: "#ffffff",}} onClick={() => setReplyTo(comment._id)}/>
+                    <p className='timestamp'>{formatTimestamp(comment.timestamp)}</p>
                 </div>
                 
               {/* <button onClick={() => setReplyTo(comment._id)}>Reply</button> */}
@@ -96,7 +104,11 @@ const VideoDetails = ({selectedVideo}) => {
                                         <FontAwesomeIcon icon={faUser} size='l' style={{color: "#ffffff",}} />
                                         <p className='username'>{user2} Replied: </p>
                                         <p>{reply.text}</p>
+                                        
+                                        
                                     </div>
+                                    <p className='replytimestamp'>{formatTimestamp(comment.timestamp)}</p>
+                                    
                                 </div>
                         ))}
                   </div>

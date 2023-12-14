@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react'
 import axios from 'axios'
 import Spinner from './Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faTrash, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faTrash, faInfoCircle, faDownload } from '@fortawesome/free-solid-svg-icons';
 import ImageInfoModal from './ImageInfoModal'
 
 const Images = () => {
@@ -22,6 +22,21 @@ const Images = () => {
     const closeInfoModal = () => {
         setShowInfoModal(false);
     };
+
+
+    const downloadImage = (fileUrl, imageName ) => {
+        const downloadUrl = `http://localhost:4000/api/v1/upload/downloadimage/${fileUrl}`
+
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = imageName;
+
+        document.body.appendChild(link)
+
+        link.click();
+
+        document.body.removeChild(link);
+    }
 
     const fetchData = async () => {
         setLoading(true);
@@ -59,7 +74,7 @@ const Images = () => {
                     <div className='media-container'>
                         {mediaData.map((item) => (
                             <div className='media' key={item._id} onClick={() => setSelectedImage(item)}>
-                                {item.imageUrl && <img src={`http://localhost:4000/files/${item.imageUrl}`} alt={item.name} />}
+                                {item.fileUrl && <img src={`http://localhost:4000/files/${item.fileUrl}`} alt={item.name} />}
                             </div>
                         ))}
                     </div>
@@ -67,6 +82,15 @@ const Images = () => {
                     <div className='popup_media' style={{ display: selectedImage ? 'block' : 'none' }}>
                         <div className='icondiv'>
 
+                            {/* Download icon */}
+                            <span onClick={(e) => {
+                                e.stopPropagation();
+                                downloadImage(selectedImage.fileUrl, selectedImage.name)
+                            }}>
+                                <FontAwesomeIcon icon={faDownload} size="2xs" />
+                            </span>
+
+                            {/* info icon */}
                             <span onClick={
                                 (e) => {
                                     e.stopPropagation();
@@ -88,14 +112,19 @@ const Images = () => {
                             </span>
 
                             {/* Cancle icon */}
-                            <span onClick={() => {closeInfoModal(); setSelectedImage(null)}}>
+                            <span onClick={
+                                () => 
+                                {
+                                    closeInfoModal(); 
+                                    setSelectedImage(null)
+                            }}>
                                 <FontAwesomeIcon icon={faTimes} size="2xs" />
                             </span>
                         </div>
 
                         {/* Show image */}
-                        {selectedImage && selectedImage.imageUrl && (
-                            <img src={`http://localhost:4000/files/${selectedImage.imageUrl}`} alt={selectedImage.name} />
+                        {selectedImage && selectedImage.fileUrl && (
+                            <img src={`http://localhost:4000/files/${selectedImage.fileUrl}`} alt={selectedImage.name} />
                         )}
 
                         {/* Image Info Modal */}
